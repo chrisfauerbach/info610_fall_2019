@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>INFO 610 - Week 2.0</title>
+    <meta charset="utf-8">
+    <style>
+      @import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+      @import url(https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
+      @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+
+      body { font-family: 'Droid Serif'; }
+      h1, h2, h3 {
+        font-family: 'Yanone Kaffeesatz';
+        font-weight: normal;
+      }
+      .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
+
+/* Two-column layout */
+      .left-column {
+        color: #777;
+        width: 20%;
+        height: 92%;
+        float: left;
+      }
+        .left-column h2:last-of-type, .left-column h3:last-child {
+          color: #000;
+        }
+      .right-column {
+        width: 75%;
+        float: right;
+        padding-top: 1em;
+      }
+/* Two-column layout */
+      .left-column-half {
+        color: #777;
+        width: 50%;
+        height: 92%;
+        float: left;
+      }
+      .right-column-half {
+        width: 50%;
+        float: right;
+        padding-top: 1em;
+        line-height: .9em;
+      }
+
+    table, td, th {
+        border: 1px solid black;
+        font-size: .9em;
+    }
+
+     li {
+       line-height:2.5em;
+    }
+
+    </style>
+  </head>
+  <body>
+    <textarea id="source">
+
+# 
+
+<div style="text-align:center;font-size: 3em;line-height:3em;"> INFO 610 Fall 2019 </div>
+<div style="text-align:center;font-size: 1.5em;line-height:1.8em;">Week 3</div>
+<div style="text-align:center;font-size: 1em;line-height:1.8em;">Terminology, Case Studies, Data Types</div>
+<div style="text-align:center;font-size: 1.9em;line-height:3em;">chrisfauerbach.github.io/info610_fall_2019/</div>
+---
+# We are ahead!  
+
+Today is the last day of 'theory' before we dive into Postgresql 
+<ul>
+<li>Review Terminology</li>
+<li>Value Related</li>
+<li>Database Structure</li>
+<li>Relationships</li>
+<li>Data Types</li>
+<li>Case Studies</li>
+</ul>
+
+---
+#   Value Related Terminology
+
+## Data
+is data that you process in a manner that makes it meaningful and useful when you work with it or view it.<br/>
+
+
+<table width="90%">
+<tr><td>George Edleman</td> <td>92883</td> <td>06/16/96</td> <td>95.00</td> </tr>
+</table>
+<br/>
+<br/>
+<br/>
+Can you guess what this data is?
+
+---
+
+## Information
+ is data that you process in a manner that makes it meaningful and useful when you work with it or view it.<br/>
+
+<br/><br/>
+<table width="90%">
+<tr><th>Name</th><th>Zip</th><th>Date of Birth</th><th>Hourly Rate</th></tr>
+<tr><td>George Edleman</td> <td>92883</td> <td>06/16/96</td> <td>95.00</td> </tr>
+</table>
+
+<br/>
+<br/>
+<br/>
+<br/>
+SQL Statement:<br/>
+<strong>SELECT Name, Zip, DOB, HourlyRate from Employees</strong><br/>
+---
+# Null
+
+<i>null</i> represents a missing or unknown value.  <br/>
+A null is NOT the same as a 0 (zero) or an empty string ""<br/>
+
+<ul>
+<li>0 (zero) is a numerical value, it can represent counts, inventories, account balances etc</li>
+<li>A text string with one or more blank spaces can be meaningful. For instance, A resident of Washington, DC doesn't have a 'state'</li>
+<li>A zero length string '' can be meaningful in certain scenarions, such as someone without a middle initial.</li>
+</ul>
+
+---
+# Problem with null
+
+Don't mix nulls with numbers.  Math and null doesn't work out well.<br/>
+<i>null * 3 = ???</i><br/>
+<br/>
+
+|id|name|age|
+|--|--|--|
+|1|Chris|40|
+|2|Sarah|30|
+|3|Jeb|null|
+
+<br/>
+What's the 'average' age of the people in our table?<br/>
+
+---
+# Structure Related Terms
+
+## Table
+
+In a relational database, data is stored in 'relations', which are perceived by/presented to the user as tables.<br/><br/>
+Each relation is composed of <i>tuples</i> (records) and <i>attributes</i> (fields).<br/><br/>
+
+
+|Client ID|Client First Name|Client Last Name|Client City|-- other fields --|
+|--|--|--|--|--|
+| 9001 | Stewart | Jameson| Seattle | ... |
+| 9002 | Susan | Black| Poulsbo | ... |
+| 9003 | Estela | Rosales| Tacoma | ... |
+| 9004 | Timothy | Ennis| Seattle | ... |
+| 9005 | Marvin | Russo| Richmond | ... |
+| 9006 | Kiran | Bently| Tacoma | ... |
+
+---
+# Primary Key
+
+Field(s) that uniquely identifies a tuple/record in the database table.<br/><br/>
+
+Table: Clients<br/>
+
+|Client ID|Client First Name|Client Last Name|Client City|-- other fields --|
+|--|--|--|--|--|
+| 9001 | Stewart | Jameson| Seattle | ... |
+
+In the previous example, "Client ID" is the primary key.<br/><br/>
+
+Tables tend to represent <i>object</i> or <i>events</i><br/><br/>
+
+Events are typically time based.<br/><br/>
+Financial Transactions, Trades, Observations, etc.
+---
+# Types of Tables
+
+## Data Table
+A table that stores data representing objects or events.  These are the tables that you will use to create, read, update and delete.   These are the 'main' tables that you will model.
+
+## Validation Tables / Lookup Tables
+
+(I'll use Lookup more than Validation, as the term.)<br/><br/>
+
+These will store data that is used to validate data within data tables.  <br/>
+This validation is key to data integrity across common fields<br/>
+This data tends to be static or unchanging.<br/>
+
+<strong>Examples:</strong> product codes, state codes, zip codes, name prefixes, suffixes, etc.
+
+
+---
+# Example Lookup Tables
+
+|Category ID| Category Name|
+|--|--|
+|1000|Accessories|
+|2000|Bikes|
+|3000|Clothing|
+|4000|Components|
+
+The Category ID will be used across other tables in the database. e.g.<br/><br/>
+
+|Product ID|Product Name|Product Category|
+|--|--|--|
+|1|Domane SL 6|2000|
+|2|Madone SL 6 Disc|2000|
+|3|Bontrager Flare RT Rear Bike Light|1000|
+|4|Bontrager Kalia Women's Fitness Jersey|3000|
+|5|Kovee XXX Boost TLR 29 MTB Wheels|4000|
+
+"Category ID" on the Categories table is the <strong>Primary Key</strong><br/>
+"Product Category" on the Categories table is the <strong>Foreign Key</strong><br/>
+
+---
+# Record
+
+A <i>record</i> represents a unique instance of the subject of the table.<br/>
+It is composed of the entire set of fields in a table, whether the field contains a value or not.<br/>
+<br/>
+"Records are a key factor in understanding table relationships because you'll need to know how a record in one table relates to other records in another table.
+
+---
+# Views
+
+A <i>View</i> is a 'virtual' table composed of fields from one or more table in the database.<br/>
+A VIEW is virtual because it draws data from base tables rather than storing data on its own.  <br/>
+* Many major RDBMS programs support views, but some refer to them as 'saved queries'<br/>
+* Views enable you to see data from different angles.
+
+To draw on the board:
+* Students
+* Student Instruments
+* Instruments
+
+View: <strong>Instrument Assignments</strong>
+
+---
+# Why Views?
+
+* Enable you to work with data from multiple tables simultaneously
+* Enable you to prevent certain users from viewing or manipulating certain fields within a table
+* Optimize query / data access (not what the book says, but read on materialized views)
+
+---
+# Keys
+
+Keys play a special role within the table.  These link tables together as we've discussed.<br/>
+
+* Primary Key
+
+A field or group of fields that uniquely identify each record in a table.  <br/>
+If it's more than one field it's called a 'composite' key<br/>
+A primary key value identifies a specific record throughout the entire table<br/>
+A primary key field identifies a given table throughout the entire database.<br/>
+
+
+* Foreign Keys
+
+A foreign key is a reference to another table's primary key.  Data integrity and referential integrity.
+
+
+
+---
+# Index
+
+An <i>index</i> is a structure that an RDBMS provides to improve data processing.<br/>
+An <i>index</i> has NOTHING TO DO WITH THE DATABASE STRUCTURE<br/>
+
+Indexes (indices) are used to find specific values in a column more efficiently/quickly.
+
+--
+
+#  THURSDAY
+
+* Bring your laptop
+* Have Postgres installed/accessible
+
+I'll be using 'SQL Developer' as my primary interface, but you can use 'pgAdmin'<br/><br/>
+
+* https://www.oracle.com/database/technologies/appdev/sql-developer.html
+* https://gokhanatil.com/2014/09/configuring-oracle-sql-developer-for-postgresql.html
+* https://jdbc.postgresql.org/download.html
+
+
+
+
+
+
+
+
+
+
+
+    </textarea>
+    <script src="https://remarkjs.com/downloads/remark-latest.min.js">
+    </script>
+    <script>
+      var slideshow = remark.create();
+    </script>
+  </body>
+</html>
