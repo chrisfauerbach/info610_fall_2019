@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>INFO 610 - Week 4</title>
+    <meta charset="utf-8">
+    <style>
+      @import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+      @import url(https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
+      @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+
+      body { font-family: 'Droid Serif'; }
+      h1, h2, h3 {
+        font-family: 'Yanone Kaffeesatz';
+        font-weight: normal;
+      }
+      .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
+
+/* Two-column layout */
+      .left-column {
+        color: #777;
+        width: 20%;
+        height: 92%;
+        float: left;
+      }
+        .left-column h2:last-of-type, .left-column h3:last-child {
+          color: #000;
+        }
+      .right-column {
+        width: 75%;
+        float: right;
+        padding-top: 1em;
+      }
+/* Two-column layout */
+      .left-column-half {
+        color: #777;
+        width: 50%;
+        height: 92%;
+        float: left;
+      }
+      .right-column-half {
+        width: 50%;
+        float: right;
+        padding-top: 1em;
+        line-height: .9em;
+      }
+
+    table, td, th {
+        border: 1px solid black;
+        font-size: .9em;
+    }
+
+     li {
+       line-height:2.5em;
+    }
+
+    </style>
+  </head>
+  <body>
+    <textarea id="source">
+
+# 
+
+<div style="text-align:center;font-size: 3em;line-height:3em;"> INFO 610 Fall 2019 </div>
+<div style="text-align:center;font-size: 1.5em;line-height:1.8em;">Week 4</div>
+<div style="text-align:center;font-size: 1em;line-height:1.8em;">All the SQL</div>
+<div style="text-align:center;font-size: 1.9em;line-height:3em;">chrisfauerbach.github.io/info610_fall_2019/</div>
+---
+# All the SQL
+
+* CREATE tables
+* Primary Keys
+* Foreign Keys
+* NOT null
+
+---
+# Create table
+
+```sql
+DROP TABLE IF EXISTS agents;
+
+
+CREATE TABLE agents
+(agent_id int primary key,
+agent_first_name varchar(255),
+agent_last_name varchar(255),
+date_of_hire date,
+agent_home_phone varchar(255));
+```
+* In my scripts, I start with dropping the table so I can run it over and over.
+* If the table DOESN'T exist 'DROP TABLE agents' would fail.
+* IF EXISTS protects against that failure
+* 'agent_id' is an integer, primary key.
+* These columns use two data types
+  * varchar, date
+
+---
+
+# INSERT
+
+```sql
+
+INSERT INTO agents
+(agent_id, agent_first_name, agent_last_name, date_of_hire, agent_home_phone)
+VALUES (100, 'Mike', 'Hernandez', '05/16/2011', '553-3992'),
+(101, 'Greg', 'Johnson', '10/15/2011', '790-3992'),
+(102, 'Katherine', 'Ehrlich', '03/01/2012', '551-4993');
+
+``` 
+* Page 14 of design book shows us the data we'll insert
+* This statement INSERTS INTO the 'agents' table
+* The values in the tuples will be placed into the columents (agent_id, agent_first_name, etc)
+* the 'values' provide a list of 'tuples' (rows)
+
+---
+# Foreign Key
+
+```sql
+CREATE TABLE clients(
+	client_id serial PRIMARY KEY,  
+	agent_id int NOT null REFERENCES agents (agent_id),
+	first_name varchar(255),
+	last_name varchar(255)
+);
+```
+* REFERENCES sets up the foreign key
+* the 'agent_id' field is a foreign key to 'agents (agent_id)'
+
+---
+# Failed Insert / Foreign Key
+
+```sql
+
+INSERT INTO clients
+(client_id, agent_id, client_first_name, client_last_name, client_home_phone)
+VALUES (9000, 1, 'ThisIsA', 'Failure', '804 555 1212');
+``` 
+* We never put an agent in the 'agents' table with an 'agent_id' of 1
+* When we execute this statement, we get an error:
+  
+```Error report -
+SQL Error: ERROR: insert or update on table "clients" violates foreign key constraint "clients_agent_id_fkey"
+  Detail: Key (agent_id)=(1) is not present in table "agents".```
+
+* We have violated the foreign key constraint. 
+
+---
+# SQL from class
+
+This is the SQL we built in class that had the:
+* INNER JOINS
+* CREATE VIEW
+
+<a href='class.sql' target='_blank'>class.sql</a>
+
+
+    </textarea>
+    <script src="https://remarkjs.com/downloads/remark-latest.min.js">
+    </script>
+    <script>
+      var slideshow = remark.create();
+    </script>
+  </body>
+</html>
