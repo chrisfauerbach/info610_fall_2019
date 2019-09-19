@@ -27,6 +27,7 @@ VALUES (9000, 100, 'John', 'Smith', '553-3992'),
 (9002, 101, 'Susan', 'Black', '790-3992'),
 (9003, 102, 'Estela', 'Rosales', '551-4993');
 
+# Fails since agent_id 1 does not exist in the agents table.
 INSERT INTO clients
 (client_id, agent_id, client_first_name, client_last_name, client_home_phone)
 VALUES (9345, 1, 'ThisIsA', 'Failure', '804 555 1212');
