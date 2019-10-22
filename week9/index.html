@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>INFO 610 - Week 9 - Oct 22, 2019</title>
+    <meta charset="utf-8">
+    <style>
+      @import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+      @import url(https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
+      @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+
+      body { font-family: 'Droid Serif'; }
+      h1, h2, h3 {
+        font-family: 'Yanone Kaffeesatz';
+        font-weight: normal;
+      }
+      .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
+
+/* Two-column layout */
+      .left-column {
+        color: #777;
+        width: 20%;
+        height: 92%;
+        float: left;
+      }
+        .left-column h2:last-of-type, .left-column h3:last-child {
+          color: #000;
+        }
+      .right-column {
+        width: 75%;
+        float: right;
+        padding-top: 1em;
+      }
+/* Two-column layout */
+      .left-column-half {
+        color: #777;
+        width: 50%;
+        height: 92%;
+        float: left;
+      }
+      .right-column-half {
+        width: 50%;
+        float: right;
+        padding-top: 1em;
+        line-height: .9em;
+      }
+
+    table, td, th {
+        border: 1px solid black;
+        font-size: .9em;
+    }
+
+     li {
+       line-height:2.5em;
+    }
+
+    </style>
+  </head>
+  <body>
+    <textarea id="source">
+
+# 
+
+<div style="text-align:center;font-size: 3em;line-height:3em;"> INFO 610 Fall 2019 </div>
+<div style="text-align:center;font-size: 1.5em;line-height:1.8em;">Week 9, Oct 22, 2019</div>
+<div style="text-align:center;font-size: 1em;line-height:1.8em;">Python</div>
+<div style="text-align:center;font-size: 1.9em;line-height:3em;">chrisfauerbach.github.io/info610_fall_2019/</div>
+---
+
+# Python Installation
+* Mac OS -- Homebrew
+ * install 'homebrew' : https://brew.sh/
+ * brew install python3.7
+ * brew install pipenv
+
+* Windows - Anaconda
+ * https://docs.anaconda.com/anaconda/install/windows/
+ * https://docs.anaconda.com/anaconda/install/verify-install/
+
+---
+#Install Psycopg2
+
+* Mac OS 
+ * mkdir project
+ * pipenv --python 3.7
+ * pipenv shell
+ * pipenv install psycopg2-binary
+
+* Windows
+ * conda install flask
+ * conda install psycopg2-binary
+
+---
+# Connect to Postgresql
+
+* vim
+* notepad
+* Visual Studio Code
+* PyCharm
+
+* edit -    test.py
+
+---
+
+# Python Code
+```python
+import psycopg2
+
+# Connect to an existing database
+conn = psycopg2.connect(dbname="postgres", user="postgres", password="secret", host="localhost", "port"=5432)
+
+# Open a cursor to perform database operations
+cur = conn.cursor()
+
+#Drop table if exists
+cur.execute("DROP TABLE IF EXISTS test")
+
+# Execute a command: this creates a new table
+cur.execute("CREATE TABLE test (id serial PRIMARY KEY, num integer, data varchar);")
+
+# Pass data to fill a query placeholders and let Psycopg perform
+# the correct conversion (no more SQL injections!)
+cur.execute("INSERT INTO test (num, data) VALUES (%s, %s)",  (100, "abc'def"))
+
+# Query the database and obtain data as Python objects
+cur.execute("SELECT * FROM test;")
+print(cur.fetchone())
+
+# Make the changes to the database persistent
+conn.commit()
+
+# Close communication with the database
+cur.close()
+conn.close()
+
+```
+    </textarea>
+    <script src="https://remarkjs.com/downloads/remark-latest.min.js">
+    </script>
+    <script>
+      var slideshow = remark.create();
+    </script>
+  </body>
+</html>
