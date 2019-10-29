@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>INFO 610 - Week 10 - Oct 29, 2019</title>
+    <meta charset="utf-8">
+    <style>
+      @import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+      @import url(https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
+      @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+
+      body { font-family: 'Droid Serif'; }
+      h1, h2, h3 {
+        font-family: 'Yanone Kaffeesatz';
+        font-weight: normal;
+      }
+      .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
+
+/* Two-column layout */
+      .left-column {
+        color: #777;
+        width: 20%;
+        height: 92%;
+        float: left;
+      }
+        .left-column h2:last-of-type, .left-column h3:last-child {
+          color: #000;
+        }
+      .right-column {
+        width: 75%;
+        float: right;
+        padding-top: 1em;
+      }
+/* Two-column layout */
+      .left-column-half {
+        color: #777;
+        width: 50%;
+        height: 92%;
+        float: left;
+      }
+      .right-column-half {
+        width: 50%;
+        float: right;
+        padding-top: 1em;
+        line-height: .9em;
+      }
+
+    table, td, th {
+        border: 1px solid black;
+        font-size: .9em;
+    }
+
+     li {
+       line-height:2.5em;
+    }
+
+    </style>
+  </head>
+  <body>
+    <textarea id="source">
+
+# 
+
+<div style="text-align:center;font-size: 3em;line-height:3em;"> INFO 610 Fall 2019 </div>
+<div style="text-align:center;font-size: 1.5em;line-height:1.8em;">Week 10, Oct 29, 2019</div>
+<div style="text-align:center;font-size: 1em;line-height:1.8em;">Python, Pagila, Flask</div>
+<div style="text-align:center;font-size: 1.9em;line-height:3em;">chrisfauerbach.github.io/info610_fall_2019/</div>
+---
+
+# Python Code
+```python
+import psycopg2
+
+# Connect to an existing database
+conn = psycopg2.connect(dbname="postgres", user="postgres", password="secret", host="localhost", port=5432)
+
+# Open a cursor to perform database operations
+cur = conn.cursor()
+
+#Drop table if exists
+cur.execute("DROP TABLE IF EXISTS test")
+
+# Execute a command: this creates a new table
+cur.execute("CREATE TABLE test (id serial PRIMARY KEY, num integer, data varchar);")
+
+# Pass data to fill a query placeholders and let Psycopg perform
+# the correct conversion (no more SQL injections!)
+cur.execute("INSERT INTO test (num, data) VALUES (%s, %s)",  (100, "abc'def"))
+
+# Query the database and obtain data as Python objects
+cur.execute("SELECT * FROM test;")
+print(cur.fetchone())
+
+# Make the changes to the database persistent
+conn.commit()
+
+# Close communication with the database
+cur.close()
+conn.close()
+
+```
+---
+# Pagila dabase
+
+Example database, with postgresql version
+
+https://github.com/devrimgunduz/pagila
+
+https://github.com/devrimgunduz/pagila/archive/master.zip
+
+```bash
+unzip master.zip
+cd pagila-master
+
+# Create the database structures
+psql -h localhost -U postgres -d postgres -a -f pagila-schema.sql
+# Load the data
+psql -h localhost -U postgres -d postgres -a -f pagila-insert-data.sql
+# Update some structures (shrug)
+psql -h localhost -U postgres -d postgres -a -f pagila-data.sql
+
+```
+
+---
+# Group Exercise - Explore the data
+
+.... SQL will be generated and shared..  here's a start:
+
+```sql
+select * from language; -- Lookup Table
+select * from category; -- Lookup Table
+select * from country; -- Lookup Table
+
+select * from film limit 10;
+select * from film_actor limit 10;
+select * from inventory limit 10;
+
+select * from store;
+select * from staff;
+select *  from payment limit 10;
+select * from actor limit 10;
+```
+---
+# REST API
+
+* Representational state transfer (REST) is a software architectural style that defines a set of constraints to be used for creating Web services.
+* Web services that conform to the REST architectural style, called RESTful Web services, provide interoperability between computer systems on the Internet. 
+* RESTful Web services allow the requesting systems to access and manipulate textual representations of Web resources by using a uniform and predefined set of stateless operations. 
+* Other kinds of Web services, such as SOAP Web services, expose their own arbitrary sets of operations.
+
+---
+# Why use REST?
+
+* Very high level API to interact with other systems
+
+* Request / Response
+
+* Typically JSON (now, used to be XML)
+
+---
+# Example REST API
+
+```bash
+$ curl -v http://localhost:5000/
+
+*   Trying ::1...
+* TCP_NODELAY set
+* Connection failed
+* connect to ::1 port 5000 failed: Connection refused
+*   Trying 127.0.0.1...
+* TCP_NODELAY set
+* Connected to localhost (127.0.0.1) port 5000 (#0)
+> GET / HTTP/1.1
+> Host: localhost:5000
+> User-Agent: curl/7.63.0
+> Accept: */*
+>
+* HTTP 1.0, assume close after body
+< HTTP/1.0 200 OK
+< Content-Type: application/json
+< Content-Length: 27
+< Server: Werkzeug/0.16.0 Python/3.7.0
+< Date: Tue, 29 Oct 2019 18:27:00 GMT
+<
+{"message":"Hello World!"}
+* Closing connection 0
+```
+---
+# Code - Install 'flask' dependency
+
+
+```python
+# app.py
+from flask import Flask
+app = Flask(__name__)
+
+
+@app.route('/')
+def hello():
+    return {"message": "Hello World!"}
+
+if __name__ == '__main__':
+    app.run()
+```
+Then run it:
+```bash
+python app.py
+```
+---
+# Adding Postgresql
+
+```python
+import psycopg2
+import psycopg2.extras
+from flask import Flask
+
+app = Flask(__name__)
+
+
+@app.route('/country/<id>')
+def get_country(id):
+    # Connect to an existing database
+    conn = psycopg2.connect(dbname="postgres", user="postgres", password="postgres", host="localhost", port=5432)
+    # Open a cursor to perform database operations
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    print("Looking for country: ", id)
+    cur.execute("SELECT * FROM country WHERE country_id =  %s;", (id, ))
+    res = cur.fetchone()
+    print("Found a result: ", res)
+    cur.close()
+    conn.close()
+    return res
+
+@app.route('/')
+def hello():
+    return {"message": "Hello World!"}
+
+if __name__ == '__main__':
+    app.run()
+```
+
+---
+# Running It
+
+```bash
+$ python app_db1.py
+```
+
+```bash
+$ curl http://localhost:5000/country/1
+
+{"country":"Afghanistan","country_id":1,
+    "last_update":"Wed, 15 Feb 2017 09:44:00 GMT"}
+```
+---
+# 
+
+---
+# Hi
+
+---
+# Hi
+
+---
+# Hi
+
+---
+# Hi
+
+---
+# Hi
+
+---
+# Hi
+
+---
+# Hi
+
+---
+# Hi
+
+
+    </textarea>
+    <script src="https://remarkjs.com/downloads/remark-latest.min.js">
+    </script>
+    <script>
+      var slideshow = remark.create();
+    </script>
+  </body>
+</html>
