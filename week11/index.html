@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>INFO 610 - Week 11 - Nov 5, 2019</title>
+    <meta charset="utf-8">
+    <style>
+      @import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+      @import url(https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
+      @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+
+      body { font-family: 'Droid Serif'; }
+      h1, h2, h3 {
+        font-family: 'Yanone Kaffeesatz';
+        font-weight: normal;
+      }
+      .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
+
+/* Two-column layout */
+      .left-column {
+        color: #777;
+        width: 20%;
+        height: 92%;
+        float: left;
+      }
+        .left-column h2:last-of-type, .left-column h3:last-child {
+          color: #000;
+        }
+      .right-column {
+        width: 75%;
+        float: right;
+        padding-top: 1em;
+      }
+/* Two-column layout */
+      .left-column-half {
+        color: #777;
+        width: 50%;
+        height: 92%;
+        float: left;
+      }
+      .right-column-half {
+        width: 50%;
+        float: right;
+        padding-top: 1em;
+        line-height: .9em;
+      }
+
+    table, td, th {
+        border: 1px solid black;
+        font-size: .9em;
+    }
+
+     li {
+       line-height:2.5em;
+    }
+
+    </style>
+  </head>
+  <body>
+    <textarea id="source">
+
+# 
+
+<div style="text-align:center;font-size: 3em;line-height:3em;"> INFO 610 Fall 2019 </div>
+<div style="text-align:center;font-size: 1.5em;line-height:1.8em;">Week 11, Nov 5, 2019</div>
+<div style="text-align:center;font-size: 1em;line-height:1.8em;">REST, Data, Insert</div>
+<div style="text-align:center;font-size: 1.9em;line-height:3em;">chrisfauerbach.github.io/info610_fall_2019/</div>
+---
+
+# REST Functions
+
+<table width="90%">
+<tr><th>Method</th><th>Purpose</td></tr>
+<tr><td>GET</td><td>Retrieve</td></tr>
+<tr><td>POST</td><td>Create</td></tr>
+<tr><td>PUT</td><td>Replace</td></tr>
+<tr><td>PATCH</td><td>Update</td></tr>
+<tr><td>DELETE</td><td>Delete</td></tr>
+</table>
+
+
+---
+# HTTP GET 
+
+* Collection:  Retrieve the URIs of the member resources of the collection resource in the response body.
+```bash
+$ curl https://api.example.com/collection/
+[{"id":1},{"id":2}]
+```
+* Resource:  Retrieve representation of the member resource in the response body.
+```bash
+$ curl https://api.example.com/collection/1
+
+{"id":1,"name":"item1", "created":"01/01/2001 00:00:00Z"}
+```
+---
+# HTTP POST
+
+* Create a member resource in the member resource using the instructions in the request body. 
+* The URI of the created member resource is automatically assigned and returned in the response
+
+```bash
+$ curl -XPOST -H "Content-Type: application/json" \
+  http://api.example.com/collection -d '{"name":"item3"}'
+
+{"id":3,"name":"item3", "created":"01/01/2001 00:00:00Z"}
+
+```
+---
+# HTTP PUT 
+
+* Replace all the representations of the member resource or create the member resource if it does not exist, with the representation in the request body.
+
+```bash
+$ curl -XPUT -H "Content-Type: application/json" \
+  http://api.example.com/collection/3 -d '{"name":"newNameItem3"}'
+
+{"id":3,"name":"newNameItem3", "created":"01/01/2001 00:00:00Z"}
+
+```
+
+---
+# HTTP PATCH 
+
+* Update all the representations of the member resource, or may create the member resource if it does not exist, using the instructions in the request body.
+
+Different between PATCH and PUT - 
+
+PUT replaces the entire document.
+PATCH updates only 'fields' specified in update.
+ 
+---
+# HTTP DELETE
+
+* Delete all the representations of the member resource.
+
+```bash
+$ curl -XDELETE https://api.example.com/collection/1
+
+{"status":"ok"}
+
+``` 
+
+---
+# Mapping REST to SQL
+
+<table width="90%">
+<tr><th>Method</th><th>Purpose</th><th>SQL</th></tr>
+<tr><td>GET</td><td>Retrieve</td><td>SELECT</td></tr>
+<tr><td>POST</td><td>Create</td><td>INSERT</td></tr>
+<tr><td>PUT</td><td>Replace</td><td>UPDATE *</td></tr>
+<tr><td>PATCH</td><td>Update</td><td>UPDATE *</td></tr>
+<tr><td>DELETE</td><td>Delete</td><td>DELETE</td></tr>
+</table>
+
+\* UPSERT!
+
+---
+# Upsert
+
+* "UPSERT" is a DBMS feature that allows a DML statement's author to atomically either insert a row, or on the basis of the row already existing, UPDATE that existing row instead, while safely giving little to no further thought to concurrency.
+*  One of those two outcomes must be guaranteed, regardless of concurrent activity, which has been called "the essential property of UPSERT". 
+
+```sql
+INSERT INTO users (id, name) VALUES ('fbdf0e604e', 'chris.fauerbach') 
+    ON CONFLICT DO UPDATE SET name='chris.fauerbach';
+```
+---
+
+# Back to the python
+```python
+\# Adding GET
+@app.route('/country/<id>', methods=['GET'])
+def get_country(id):
+    conn = psycopg2.connect(dbname="postgres", user="postgres", password="postgres", host="localhost", port=5432)
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    cur.execute("SELECT * FROM country WHERE country_id =  %s;", (id, ))
+    res = cur.fetchone()
+    cur.close()
+    conn.close()
+    return res
+
+\# Adding DELETE
+@app.route('/country/<id>', methods=['DELETE'])
+def del_country(id):
+    conn = psycopg2.connect(dbname="postgres", user="postgres", password="postgres", host="localhost", port=5432)
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    cur.execute("DELETE FROM country WHERE country_id =  %s;", (id, ))
+    res = cur.fetchone()
+    cur.close()
+    conn.close()
+    return res
+```
+
+
+---
+# DRY - Donate Repeat Yourself
+
+
+
+---
+# 
+
+
+---
+# 
+
+
+---
+# 
+
+
+---
+# 
+
+
+---
+# 
+
+
+---
+# 
+
+
+---
+# 
+
+
+---
+# 
+
+
+---
+# 
+
+
+
+
+    </textarea>
+    <script src="https://remarkjs.com/downloads/remark-latest.min.js">
+    </script>
+    <script>
+      var slideshow = remark.create();
+    </script>
+  </body>
+</html>
